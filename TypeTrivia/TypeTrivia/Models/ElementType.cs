@@ -24,7 +24,6 @@ namespace TypeTrivia.Models
             ElementName = Name;
             ElementIDnum = id;
             ElementColor = elementColor;
-            IsInQuestion = false;
             StrongAgainst = new List<String>();
             WeakAgainst = new List<String>();
             VulnerableTo = new List<String>();

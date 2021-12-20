@@ -9,12 +9,14 @@
         <vm:QuestionViewModel/>
     </ContentPage.BindingContext>
         <ContentPage.Content>
-        <StackLayout Orientation="Vertical" Padding="30,24,30,24" Spacing="10">
-            <Label Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" HorizontalOptions="End"/>
-            <Label Text="{Binding QuestionPart1}" FontSize="Medium" HorizontalOptions="Center"/>
-            <Label Text="{Binding QuestionElement.ElementName}" TextColor="White" BackgroundColor="{Binding QuestionElement.ElementColor}" FontSize="Medium" HorizontalOptions="Center" Padding="10,2,10,2"/>
-            <Label Text="{Binding QuestionPart2}" FontSize="Medium" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
-            <Button x:Name="normalButton" 
+        <StackLayout>
+            <StackLayout x:Name="gameStack" Orientation="Vertical" Padding="30,24,30,24" Spacing="10">
+                <Label Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" HorizontalOptions="End"/>
+                <Label Text="{Binding QuestionPart1}" FontSize="Medium" HorizontalOptions="Center"/>
+                <Label Text="{Binding QuestionElement.ElementName}" TextColor="White" BackgroundColor="{Binding QuestionElement.ElementColor}" FontSize="Medium" HorizontalOptions="Center" Padding="10,2,10,2"/>
+                <Label Text="{Binding QuestionPart2}" FontSize="Medium" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                <StackLayout x:Name="buttonStack" IsEnabled="{Binding GameRunning}">
+                    <Button x:Name="normalButton" 
                     IsVisible="{Binding Elements[0].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[0].ElementName}"
@@ -22,7 +24,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference normalButton}"/>
-            <Button x:Name="fightingButton" 
+                    <Button x:Name="fightingButton" 
                     IsVisible="{Binding Elements[1].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[1].ElementName}"
@@ -30,7 +32,7 @@
                     TextColor="White"
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference fightingButton}"/>
-            <Button x:Name="flyingButton" 
+                    <Button x:Name="flyingButton" 
                     IsVisible="{Binding Elements[2].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[2].ElementName}"
@@ -38,7 +40,7 @@
                     TextColor="White"
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference flyingButton}"/>
-            <Button x:Name="poisonButton" 
+                    <Button x:Name="poisonButton" 
                     IsVisible="{Binding Elements[3].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[3].ElementName}"
@@ -46,7 +48,7 @@
                     TextColor="White"
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference poisonButton}"/>
-            <Button x:Name="groundButton" 
+                    <Button x:Name="groundButton" 
                     IsVisible="{Binding Elements[4].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[4].ElementName}"
@@ -54,7 +56,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference groundButton}"/>
-            <Button x:Name="rockButton" 
+                    <Button x:Name="rockButton" 
                     IsVisible="{Binding Elements[5].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[5].ElementName}"
@@ -62,7 +64,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference rockButton}"/>
-            <Button x:Name="bugButton" 
+                    <Button x:Name="bugButton" 
                     IsVisible="{Binding Elements[6].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[6].ElementName}"
@@ -70,7 +72,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference bugButton}"/>
-            <Button x:Name="ghostButton" 
+                    <Button x:Name="ghostButton" 
                     IsVisible="{Binding Elements[7].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[7].ElementName}"
@@ -78,7 +80,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference ghostButton}"/>
-            <Button x:Name="steelButton" 
+                    <Button x:Name="steelButton" 
                     IsVisible="{Binding Elements[8].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[8].ElementName}"
@@ -86,7 +88,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference steelButton}"/>
-            <Button x:Name="fireButton" 
+                    <Button x:Name="fireButton" 
                     IsVisible="{Binding Elements[9].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[9].ElementName}"
@@ -94,7 +96,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference fireButton}"/>
-            <Button x:Name="waterButton" 
+                    <Button x:Name="waterButton" 
                     IsVisible="{Binding Elements[10].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[10].ElementName}"
@@ -102,7 +104,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference waterButton}"/>
-            <Button x:Name="grassButton" 
+                    <Button x:Name="grassButton" 
                     IsVisible="{Binding Elements[11].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[11].ElementName}"
@@ -110,7 +112,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference grassButton}"/>
-            <Button x:Name="electricButton" 
+                    <Button x:Name="electricButton" 
                     IsVisible="{Binding Elements[12].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[12].ElementName}"
@@ -118,7 +120,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference electricButton}"/>
-            <Button x:Name="psychicButton" 
+                    <Button x:Name="psychicButton" 
                     IsVisible="{Binding Elements[13].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[13].ElementName}"
@@ -126,7 +128,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference psychicButton}"/>
-            <Button x:Name="iceButton" 
+                    <Button x:Name="iceButton" 
                     IsVisible="{Binding Elements[14].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[14].ElementName}"
@@ -134,7 +136,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference iceButton}"/>
-            <Button x:Name="dragonButton" 
+                    <Button x:Name="dragonButton" 
                     IsVisible="{Binding Elements[15].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[15].ElementName}"
@@ -142,7 +144,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference dragonButton}"/>
-            <Button x:Name="darkButton" 
+                    <Button x:Name="darkButton" 
                     IsVisible="{Binding Elements[16].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[16].ElementName}"
@@ -150,7 +152,7 @@
                     TextColor="White" 
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference darkButton}"/>
-            <Button x:Name="fairyButton" 
+                    <Button x:Name="fairyButton" 
                     IsVisible="{Binding Elements[17].IsInQuestion}" 
                     Margin="0,10,0,0" 
                     Text="{Binding Elements[17].ElementName}"
@@ -158,60 +160,13 @@
                     TextColor="White"
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference fairyButton}"/>
-            <!--<Button x:Name="fireButton" 
-                    IsVisible="{Binding Elements[1].IsInQuestion}" 
-                    Margin="0,10,0,0" 
-                    Text="{Binding Elements[1].ElementName}"
-                    Command="{Binding SelectAnswerCommand}"
-                    CommandParameter="{x:Reference fireButton}"
-                    Clicked="Button_Clicked"
-                        BackgroundColor="{Binding Elements[0].ElementColor}"
-                        TextColor="White" />
-            <Button Margin="0,10,0,0" Text="Type 2"
-                        Command="{Binding DefenseCommand}"
-                        BackgroundColor="CornflowerBlue"
-                        TextColor="White" />
-            <Button Margin="0,10,0,0" Text="Answer 3"
-                        Command="{Binding AttackCommand}"
-                        BackgroundColor="PaleVioletRed"
-                        TextColor="White" />
-            <Button Margin="0,10,0,0" Text="Type 4"
-                        Command="{Binding DefenseCommand}"
-                        BackgroundColor="CornflowerBlue"
-                        TextColor="White" />-->
-            <!--<StackLayout>
-                <CollectionView x:Name="answerButtons" ItemsSource="{Binding Elements}" SelectionMode="Single" SelectedItem="{Binding SelectedElement}">
-                    <CollectionView.ItemTemplate>
-                        <DataTemplate x:DataType="model:ElementType">
-                            <StackLayout Margin="0" Padding="5">
-                                Needed because we aren't using a swipeview on the achievements
-                                <Frame Style="{StaticResource CardFrameStyle}" Opacity="{Binding Unlocked[0], Converter={StaticResource enableConvert}}" HeightRequest="50">
-                                    <StackLayout Style="{StaticResource CardDetailStyle}">
-                                        <Grid RowDefinitions="*,*" ColumnDefinitions="*,*,*" HorizontalOptions="FillAndExpand" IsVisible="{Binding Achievement.Hidden, Converter={StaticResource cnvInvert}}">
-                                            <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2" Text="{Binding Achievement.Title}" Style="{StaticResource CardTextStyle}" />
-                                            <StackLayout Grid.Row="0" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="End">
-                                                <Label Style="{StaticResource Key=TagStyle}" Text="{Binding Level}"/>
-                                                <StackLayout Orientation="Horizontal" HorizontalOptions="End" Padding="0" Margin="0">
-                                                    <Label Style="{StaticResource Key=TagStyle}" Text="{xct:Translate AchievementTrackerCountLabel}"/>
-                                                    <Label Style="{StaticResource Key=TagStyle}" Text="{Binding TrackerCount}" Margin="-5,0,0,0"/>
-                                                </StackLayout>
-                                            </StackLayout>
-                                            <Label Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2" FontSize="Small" Text="{Binding Achievement.Description}" />
-                                            <StackLayout Grid.Row="1" Grid.Column="2" Orientation="Horizontal" HorizontalOptions="End" VerticalOptions="Start">
-                                                <Label Style="{StaticResource Key=TagStyle}" Text="{xct:Translate AchievementProgressLabel}" />
-                                                <ProgressBar HorizontalOptions="End" Progress="{Binding Percent}" />
-                                            </StackLayout>
-                                        </Grid>
-                                        <StackLayout IsVisible="{Binding Achievement.Hidden}">
-                                            <Label Text="{xct:Translate HiddenAchievementTitle}" Style="{StaticResource CardTextStyle}"/>
-                                        </StackLayout>
-                                    </StackLayout>
-                                </Frame>
-                            </StackLayout>
-                        </DataTemplate>
-                    </CollectionView.ItemTemplate>
-                </CollectionView>
-            </StackLayout>-->
+                </StackLayout>
+                <StackLayout Orientation="Vertical" Spacing="2" IsVisible="{Binding GameOver}" HorizontalOptions="CenterAndExpand">                    
+                    <Label Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" FontSize="24" HorizontalOptions="Center"/>
+                    <Label Text="{Binding LongestStreak, StringFormat='Longest Streak: {0}'}" FontSize="24" HorizontalOptions="Center"/>
+                    <Button Text="Try Again?" Command="{Binding TryAgainCommand}"/>
+                </StackLayout>
+            </StackLayout>
         </StackLayout>
     </ContentPage.Content>
 </ContentPage>

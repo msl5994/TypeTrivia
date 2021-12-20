@@ -1,14 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using TypeTrivia.Models;
 using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
+using Xamarin.Essentials;
 
 namespace TypeTrivia.ViewModels
 {
-    public class QuestionViewModel
+    public class QuestionViewModel : INotifyPropertyChanged
     {
         // Custom Variables
         public float[,] TypeChartValues = new float[,]
@@ -33,21 +35,129 @@ namespace TypeTrivia.ViewModels
             { 1f, 2f, 1f, 0.5f, 1f, 1f, 1f, 1f, 0.5f, 0.5f, 1f, 1f, 1f, 1f, 1f, 2f, 2f, 1f}, // Fairy
         };
 
-        public FormattedString Question { get; set; }
-        public String QuestionPart1 { get; set; }
-        public String QuestionPart2 { get; set; }
-        public ElementType QuestionElement { get; set; }
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        //public FormattedString Question { get; set; }
+        private string _questionPart1;
+        public String QuestionPart1
+        {
+            get { return _questionPart1; }
+            set
+            {
+                if (_questionPart1 != value)
+                {
+                    _questionPart1 = value;
+                    OnPropertyChanged("QuestionPart1");
+                }
+            }
+        }
+        private string _questionPart2;
+        public String QuestionPart2
+        {
+            get { return _questionPart2; }
+            set
+            {
+                if (_questionPart2 != value)
+                {
+                    _questionPart2 = value;
+                    OnPropertyChanged("QuestionPart2");
+                }
+            }
+        }
+        private ElementType _questionElement;
+        public ElementType QuestionElement 
+        {
+            get { return _questionElement; } 
+            set 
+            {
+                if (_questionElement != value)
+                {
+                    _questionElement = value;
+                    OnPropertyChanged("QuestionElement");
+                }
+            }
+        }
         public Command SelectAnswerCommand { get; }
-        public List<ElementType> Elements { get; set; }
+        public Command TryAgainCommand { get; }
+        private List<ElementType> _elements;
+        public List<ElementType> Elements
+        {
+            get { return _elements; }
+            set
+            {
+                _elements = value;
+                OnPropertyChanged("Elements");
+            }
+        }
         public ElementType SelectedElement { get; set; }
         public String Answer { get; set; }
-        public List<ElementType> PossibleAnswers { get; set; }
-        public int NumCorrectAnswers { get; set; }
-        public bool GameOver { get; set; }
+        private List<ElementType> _possibleAnswers;
+        public List<ElementType> PossibleAnswers
+        {
+            get { return _possibleAnswers; }
+            set
+            {
+                _possibleAnswers = value;
+                OnPropertyChanged("PossibleAnswers");
+            }
+        }
+        private int _numCorrectAnswers;
+        public int NumCorrectAnswers
+        {
+            get { return _numCorrectAnswers; }
+            set
+            {
+                if (_numCorrectAnswers != value)
+                {
+                    _numCorrectAnswers = value;
+                    OnPropertyChanged("NumCorrectAnswers");
+                }
+            }
+        }
+        public int LongestStreak
+        {
+            get => Preferences.Get(nameof(LongestStreak), 0);
+            set
+            {
+                Preferences.Set(nameof(LongestStreak), value);
+                OnPropertyChanged(nameof(LongestStreak));
+            }
+        }
+        private bool _gameOver;
+        public bool GameOver
+        {
+            get { return _gameOver; }
+            set
+            {
+                if (_gameOver != value)
+                {
+                    _gameOver = value;
+                    OnPropertyChanged("GameOver");
+                }
+            }
+        }
+        private bool _gameRunning;
+        public bool GameRunning
+        {
+            get { return _gameRunning; }
+            set
+            {
+                if (_gameRunning != value)
+                {
+                    _gameRunning = value;
+                    OnPropertyChanged("GameRunning");
+                }
+            }
+        }
         public QuestionViewModel()
         {
             // defaults
             NumCorrectAnswers = 0;
+            GameRunning = true;
             GameOver = false;
 
             // create list of elements
@@ -63,6 +173,10 @@ namespace TypeTrivia.ViewModels
                 SelectedElement = Elements.Where(e => e.ElementName == button.Text.ToString()).ToList().FirstOrDefault();
                 CheckAnswer();
             });
+            TryAgainCommand = new Command(() => 
+            {
+                ResetGame();
+            });
         }
 
         public void CheckAnswer()
@@ -75,16 +189,85 @@ namespace TypeTrivia.ViewModels
             }
             else
             {
-                GameOver = true;
+                EndGame();
+            }
+        }
+
+        public void EndGame()
+        {
+            GameRunning = false;
+            GameOver = true;
+            //OnPropertyChanged("GameOver");
+            //OnPropertyChanged("GameRunning");
+
+            // update longest streak if neccessary
+            if (NumCorrectAnswers > LongestStreak)
+            {
+                LongestStreak = NumCorrectAnswers;
+            }
+
+            // show them the correct answer from the question they just got wrong
+            foreach(ElementType element in PossibleAnswers)
+            {
+                if(element.ElementName == SelectedElement.ElementName)
+                {
+                    Elements.Where(e => e.ElementName == element.ElementName).ToList().SingleOrDefault().ElementColor = Color.FromHex("#E61B23");
+                }
+                else if(element.ElementName != Answer)
+                {
+                    Elements.Where(e => e.ElementName == element.ElementName).ToList().SingleOrDefault().ElementColor = Color.FromHex("#F2F2F2");
+                }
+                else
+                {
+                    Elements.Where(e => e.ElementName == element.ElementName).ToList().SingleOrDefault().ElementColor = Color.FromHex("#44A063");
+                }
+                OnPropertyChanged("Elements");
+            }
+        }
+
+        public void ResetGame()
+        {
+            // reset streak, list of answers, and elements statuses
+            NumCorrectAnswers = 0;
+            GameOver = false;
+            GameRunning = true;
+            //OnPropertyChanged("NumCorrectAnswers");
+            //OnPropertyChanged("GameOver");
+            //OnPropertyChanged("GameRunning");
+            ResetAnswersList();
+            // re-create element list and connections from base to reset colors
+            Elements.Clear();
+            CreateElements();
+            CreateRelationLists();
+            // create the first question
+            GenerateNextQuestion();
+        }
+
+        public void ResetAnswersList()
+        {
+            // reset the list of possible answers
+            if (PossibleAnswers.Count > 0)
+            {
+                foreach (ElementType answer in PossibleAnswers)
+                {
+                    // reset the visual of each button to be false
+                    Elements.Where(e => e.ElementName == answer.ElementName).ToList().FirstOrDefault().IsInQuestion = false;
+                }
+                PossibleAnswers.Clear();
+                OnPropertyChanged("PossibleAnswers");
+                OnPropertyChanged("Elements");
             }
         }
 
         public void GenerateNextQuestion()
         {
+            // reset the list of possible answers
+            ResetAnswersList();
+
             Random rand = new Random();
             int ElementIndex = rand.Next(Elements.Count);
             QuestionElement = Elements[ElementIndex];
-            Question = new FormattedString 
+            /*Question = new FormattedString 
             {
                 Spans =
                 {
@@ -92,7 +275,7 @@ namespace TypeTrivia.ViewModels
                     new Span { Text = QuestionElement.ElementName, TextColor = QuestionElement.ElementColor},
                     new Span { Text = " types, which type of the ones below does the most effective damage?", TextColor = Color.Black},
                 }
-            };
+            };*/
             QuestionPart1 = "When battling against ";
             QuestionPart2 = "Which type of the ones below does the most effective damage?";
 
@@ -107,8 +290,7 @@ namespace TypeTrivia.ViewModels
             {
                 ElementIndex = rand.Next(Elements.Count);
                 // skip if already in the list of answers
-                if(Elements[ElementIndex].IsInQuestion 
-                    || PossibleAnswers.Contains(Elements[ElementIndex]) 
+                if(PossibleAnswers.Contains(Elements[ElementIndex]) 
                     || QuestionElement.VulnerableTo.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
                 {
                     continue;
@@ -119,62 +301,64 @@ namespace TypeTrivia.ViewModels
                     PossibleAnswers.Add(Elements[ElementIndex]);
                 }
             }
+            OnPropertyChanged("PossibleAnswers");
+            OnPropertyChanged("Elements");
         }
 
         public void CreateElements()
         {
-            ElementType NormalElement = new ElementType("Normal", ElementType.ElementID.Normal, Color.Tan);
+            ElementType NormalElement = new ElementType("Normal", ElementType.ElementID.Normal, Color.FromHex("#B4966D"));
             Elements.Add(NormalElement);
 
-            ElementType FightingElement = new ElementType("Fighting", ElementType.ElementID.Fighting, Color.SaddleBrown);
+            ElementType FightingElement = new ElementType("Fighting", ElementType.ElementID.Fighting, Color.FromHex("#FF6468"));
             Elements.Add(FightingElement);
 
-            ElementType FlyingElement = new ElementType("Flying", ElementType.ElementID.Flying, Color.LightSlateGray);
+            ElementType FlyingElement = new ElementType("Flying", ElementType.ElementID.Flying, Color.FromHex("#828CC7"));
             Elements.Add(FlyingElement);
 
-            ElementType PoisonElement = new ElementType("Poison", ElementType.ElementID.Poison, Color.Purple);
+            ElementType PoisonElement = new ElementType("Poison", ElementType.ElementID.Poison, Color.FromHex("#B0669F"));
             Elements.Add(PoisonElement);
 
-            ElementType GroundElement = new ElementType("Ground", ElementType.ElementID.Ground, Color.Goldenrod);
+            ElementType GroundElement = new ElementType("Ground", ElementType.ElementID.Ground, Color.FromHex("#E2B666"));
             Elements.Add(GroundElement);
 
-            ElementType RockElement = new ElementType("Rock", ElementType.ElementID.Rock, Color.SandyBrown);
+            ElementType RockElement = new ElementType("Rock", ElementType.ElementID.Rock, Color.FromHex("#AAA063"));
             Elements.Add(RockElement);
 
-            ElementType BugElement = new ElementType("Bug", ElementType.ElementID.Bug, Color.LightGreen);
+            ElementType BugElement = new ElementType("Bug", ElementType.ElementID.Bug, Color.FromHex("#97AC3A"));
             Elements.Add(BugElement);
 
-            ElementType GhostElement = new ElementType("Ghost", ElementType.ElementID.Ghost, Color.MediumPurple);
+            ElementType GhostElement = new ElementType("Ghost", ElementType.ElementID.Ghost, Color.FromHex("#826F97"));
             Elements.Add(GhostElement);
 
-            ElementType SteelElement = new ElementType("Steel", ElementType.ElementID.Steel, Color.Gray);
+            ElementType SteelElement = new ElementType("Steel", ElementType.ElementID.Steel, Color.FromHex("#8BB4BE"));
             Elements.Add(SteelElement);
 
-            ElementType FireElement = new ElementType("Fire", ElementType.ElementID.Fire, Color.OrangeRed);
+            ElementType FireElement = new ElementType("Fire", ElementType.ElementID.Fire, Color.FromHex("#FB794F"));
             Elements.Add(FireElement);
 
-            ElementType WaterElement = new ElementType("Water", ElementType.ElementID.Water, Color.Aqua);
+            ElementType WaterElement = new ElementType("Water", ElementType.ElementID.Water, Color.FromHex("#4FC8DB"));
             Elements.Add(WaterElement);
 
-            ElementType GrassElement = new ElementType("Grass", ElementType.ElementID.Grass, Color.Green);
+            ElementType GrassElement = new ElementType("Grass", ElementType.ElementID.Grass, Color.FromHex("#79CB5D"));
             Elements.Add(GrassElement);
 
-            ElementType ElectricElement = new ElementType("Electric", ElementType.ElementID.Electric, Color.Yellow);
+            ElementType ElectricElement = new ElementType("Electric", ElementType.ElementID.Electric, Color.FromHex("#EFCE12"));
             Elements.Add(ElectricElement);
 
-            ElementType PsychicElement = new ElementType("Psychic", ElementType.ElementID.Psychic, Color.HotPink);
+            ElementType PsychicElement = new ElementType("Psychic", ElementType.ElementID.Psychic, Color.FromHex("#FF427B"));
             Elements.Add(PsychicElement);
 
-            ElementType IceElement = new ElementType("Ice", ElementType.ElementID.Ice, Color.LightBlue);
+            ElementType IceElement = new ElementType("Ice", ElementType.ElementID.Ice, Color.FromHex("#6DDCD2"));
             Elements.Add(IceElement);
 
-            ElementType DragonElement = new ElementType("Dragon", ElementType.ElementID.Dragon, Color.BlueViolet);
+            ElementType DragonElement = new ElementType("Dragon", ElementType.ElementID.Dragon, Color.FromHex("#5A63B0"));
             Elements.Add(DragonElement);
 
-            ElementType DarkElement = new ElementType("Dark", ElementType.ElementID.Dark, Color.DarkGray);
+            ElementType DarkElement = new ElementType("Dark", ElementType.ElementID.Dark, Color.FromHex("#5A504F"));
             Elements.Add(DarkElement);
 
-            ElementType FairyElement = new ElementType("Fairy", ElementType.ElementID.Fairy, Color.Pink);
+            ElementType FairyElement = new ElementType("Fairy", ElementType.ElementID.Fairy, Color.FromHex("#FE77AE"));
             Elements.Add(FairyElement);
         }
         public void CreateRelationLists()
