@@ -7,6 +7,7 @@ namespace TypeTrivia.Models
 {
     public class ElementType
     {
+        // properties
         public string ElementName { get; set; }
         public ElementID ElementIDnum { get; set; }
         public List<String> StrongAgainst { get; set; }
@@ -16,6 +17,20 @@ namespace TypeTrivia.Models
         public List<String> ImmuneTo { get; set; }
         public Color ElementColor { get; set; }
         public bool IsInQuestion { get; set; }
+
+        // constructor
+        public ElementType(string Name, ElementID id, Color elementColor)
+        {
+            ElementName = Name;
+            ElementIDnum = id;
+            ElementColor = elementColor;
+            IsInQuestion = false;
+            StrongAgainst = new List<String>();
+            WeakAgainst = new List<String>();
+            VulnerableTo = new List<String>();
+            ResistantTo = new List<String>();
+            ImmuneTo = new List<String>();
+        }
 
         /*
         public float[,] TypeChartValues = new float[,]
@@ -40,6 +55,7 @@ namespace TypeTrivia.Models
             { 1f, 2f, 1f, 0.5f, 1f, 1f, 1f, 1f, 0.5f, 0.5f, 1f, 1f, 1f, 1f, 1f, 2f, 2f, 1f}, // Fairy
         };
         */
+        // enum
         public enum ElementID
         {
             Normal,

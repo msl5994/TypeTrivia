@@ -61,6 +61,7 @@ namespace TypeTrivia.ViewModels
             { 
                 Button button = (Button)sender;
                 SelectedElement = Elements.Where(e => e.ElementName == button.Text.ToString()).ToList().FirstOrDefault();
+                CheckAnswer();
             });
         }
 
@@ -71,6 +72,10 @@ namespace TypeTrivia.ViewModels
                 NumCorrectAnswers++;
                 // generate next question
                 GenerateNextQuestion();
+            }
+            else
+            {
+                GameOver = true;
             }
         }
 
@@ -92,16 +97,19 @@ namespace TypeTrivia.ViewModels
             QuestionPart2 = "Which type of the ones below does the most effective damage?";
 
             // Select 4 possible answers, 1 of which must be correct
-            ElementIndex = rand.Next(Elements.Count);
-            Answer = QuestionElement.WeakAgainst[ElementIndex];
-            Elements[ElementIndex].IsInQuestion = true;
-            PossibleAnswers.Add(Elements[ElementIndex]);
+            ElementIndex = rand.Next(QuestionElement.VulnerableTo.Count);
+            Answer = QuestionElement.VulnerableTo[ElementIndex];
+            ElementType AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
+            AnswerElement.IsInQuestion = true;
+            PossibleAnswers.Add(AnswerElement);
             // loop to populate other answers
             while(PossibleAnswers.Count < 4)
             {
                 ElementIndex = rand.Next(Elements.Count);
                 // skip if already in the list of answers
-                if(Elements[ElementIndex].IsInQuestion || PossibleAnswers.Contains(Elements[ElementIndex]))
+                if(Elements[ElementIndex].IsInQuestion 
+                    || PossibleAnswers.Contains(Elements[ElementIndex]) 
+                    || QuestionElement.VulnerableTo.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
                 {
                     continue;
                 }
@@ -115,326 +123,58 @@ namespace TypeTrivia.ViewModels
 
         public void CreateElements()
         {
-            #region Normal Type
-            ElementType NormalElement = new ElementType()
-            {
-                ElementName = "Normal",
-                ElementIDnum = ElementType.ElementID.Normal,
-                ElementColor = Color.Tan,
-                StrongAgainst = new List<String>(){},
-                WeakAgainst = new List<String>()
-                {
-                    "Rock",
-                    "Steel"
-                },
-                VulnerableTo = new List<String>()
-                {
-                    "Fighting"
-                },
-                ResistantTo = new List<String>(){},
-                ImmuneTo = new List<String>()
-                {
-                    "Ghost"
-                },
-                IsInQuestion = false
-            };
+            ElementType NormalElement = new ElementType("Normal", ElementType.ElementID.Normal, Color.Tan);
             Elements.Add(NormalElement);
-            #endregion
 
-            #region Fighting Type
-            ElementType FightingElement = new ElementType()
-            {
-                ElementName = "Fighting",
-                ElementColor = Color.SaddleBrown,
-                StrongAgainst = new List<String>()
-                {
-                    "Normal",
-                    "Rock",
-                    "Steel",
-                    "Ice",
-                    "Dark"
-                },
-                WeakAgainst = new List<String>()
-                {
-                    "Flying",
-                    "Poison",
-                    "Bug",
-                    "Psychic",
-                    "Fairy"
-                },
-                VulnerableTo = new List<String>()
-                {
-                    "Flying",
-                    "Psychic",
-                    "Fairy"
-                },
-                ResistantTo= new List<String>()
-                {
-                    "Rock",
-                    "Bug",
-                    "Dark"
-                },
-                ImmuneTo = new List<String>(){},
-                IsInQuestion = false
-            };
+            ElementType FightingElement = new ElementType("Fighting", ElementType.ElementID.Fighting, Color.SaddleBrown);
             Elements.Add(FightingElement);
-            #endregion
 
-            ElementType FlyingElement = new ElementType()
-            {
-                ElementName = "Flying",
-                ElementColor = Color.LightSlateGray,
-                StrongAgainst = new List<String>()
-                {
-                    "Fighting",
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType FlyingElement = new ElementType("Flying", ElementType.ElementID.Flying, Color.LightSlateGray);
             Elements.Add(FlyingElement);
 
-            ElementType PoisonElement = new ElementType()
-            {
-                ElementName = "Poison",
-                ElementColor = Color.Purple,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType PoisonElement = new ElementType("Poison", ElementType.ElementID.Poison, Color.Purple);
             Elements.Add(PoisonElement);
 
-            ElementType GroundElement = new ElementType()
-            {
-                ElementName = "Ground",
-                ElementColor = Color.Goldenrod,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType GroundElement = new ElementType("Ground", ElementType.ElementID.Ground, Color.Goldenrod);
             Elements.Add(GroundElement);
 
-            ElementType RockElement = new ElementType()
-            {
-                ElementName = "Rock",
-                ElementColor = Color.SandyBrown,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType RockElement = new ElementType("Rock", ElementType.ElementID.Rock, Color.SandyBrown);
             Elements.Add(RockElement);
 
-            ElementType BugElement = new ElementType()
-            {
-                ElementName = "Bug",
-                ElementColor = Color.LightGreen,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType BugElement = new ElementType("Bug", ElementType.ElementID.Bug, Color.LightGreen);
             Elements.Add(BugElement);
 
-            ElementType GhostElement = new ElementType()
-            {
-                ElementName = "Ghost",
-                ElementColor = Color.MediumPurple,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType GhostElement = new ElementType("Ghost", ElementType.ElementID.Ghost, Color.MediumPurple);
             Elements.Add(GhostElement);
 
-            ElementType SteelElement = new ElementType()
-            {
-                ElementName = "Steel",
-                ElementColor = Color.Gray,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType SteelElement = new ElementType("Steel", ElementType.ElementID.Steel, Color.Gray);
             Elements.Add(SteelElement);
 
-            ElementType FireElement = new ElementType()
-            {
-                ElementName = "Fire",
-                ElementColor = Color.OrangeRed,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType FireElement = new ElementType("Fire", ElementType.ElementID.Fire, Color.OrangeRed);
             Elements.Add(FireElement);
 
-            ElementType WaterElement = new ElementType()
-            {
-                ElementName = "Water",
-                ElementColor = Color.Aqua,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType WaterElement = new ElementType("Water", ElementType.ElementID.Water, Color.Aqua);
             Elements.Add(WaterElement);
 
-            ElementType GrassElement = new ElementType()
-            {
-                ElementName = "Grass",
-                ElementColor = Color.Green,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType GrassElement = new ElementType("Grass", ElementType.ElementID.Grass, Color.Green);
             Elements.Add(GrassElement);
 
-            ElementType ElectricElement = new ElementType()
-            {
-                ElementName = "Electric",
-                ElementColor = Color.Yellow,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType ElectricElement = new ElementType("Electric", ElementType.ElementID.Electric, Color.Yellow);
             Elements.Add(ElectricElement);
 
-            ElementType PsychicElement = new ElementType()
-            {
-                ElementName = "Psychic",
-                ElementColor = Color.HotPink,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType PsychicElement = new ElementType("Psychic", ElementType.ElementID.Psychic, Color.HotPink);
             Elements.Add(PsychicElement);
 
-            ElementType IceElement = new ElementType()
-            {
-                ElementName = "Ice",
-                ElementColor = Color.LightBlue,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType IceElement = new ElementType("Ice", ElementType.ElementID.Ice, Color.LightBlue);
             Elements.Add(IceElement);
 
-            ElementType DragonElement = new ElementType()
-            {
-                ElementName = "Dragon",
-                ElementColor = Color.BlueViolet,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType DragonElement = new ElementType("Dragon", ElementType.ElementID.Dragon, Color.BlueViolet);
             Elements.Add(DragonElement);
 
-            ElementType DarkElement = new ElementType()
-            {
-                ElementName = "Dark",
-                ElementColor = Color.DarkGray,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType DarkElement = new ElementType("Dark", ElementType.ElementID.Dark, Color.DarkGray);
             Elements.Add(DarkElement);
 
-            ElementType FairyElement = new ElementType()
-            {
-                ElementName = "Fairy",
-                ElementColor = Color.Pink,
-                StrongAgainst = new List<String>()
-                {
-
-                },
-                WeakAgainst = new List<String>()
-                {
-
-                },
-                IsInQuestion = false
-            };
+            ElementType FairyElement = new ElementType("Fairy", ElementType.ElementID.Fairy, Color.Pink);
             Elements.Add(FairyElement);
         }
         public void CreateRelationLists()
