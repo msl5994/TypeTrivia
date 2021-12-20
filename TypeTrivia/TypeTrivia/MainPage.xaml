@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:TypeTrivia.ViewModels"
+             x:Class="TypeTrivia.MainPage"
+             Title="Type Trivia">
+    <ContentPage.BindingContext>
+        <vm:MainPageViewModel/>
+    </ContentPage.BindingContext>
+        <StackLayout>
+        <!--<Frame BackgroundColor="#2196F3" Padding="10" CornerRadius="0">
+            <Label Text="Welcome to Type Trivia" FontSize="Large" HorizontalOptions="Center" Margin="10" TextColor="White"/>
+        </Frame>-->
+        <ScrollView Grid.Row="1">
+            <StackLayout Orientation="Vertical" Padding="30,24,30,24" Spacing="10">
+                <Label Text="Choose a Category:" FontSize="Medium" HorizontalOptions="Center" TextColor="Black"/>
+                <Button Margin="0,10,0,0" Text="Attacking"
+                        Command="{Binding AttackCommand}"
+                        BackgroundColor="PaleVioletRed"
+                        TextColor="White" />
+                <Button Margin="0,10,0,0" Text="Defending"
+                        Command="{Binding DefenseCommand}"
+                        BackgroundColor="CornflowerBlue"
+                        TextColor="White" />
+            </StackLayout>
+        </ScrollView>
+    </StackLayout>
+</ContentPage>
