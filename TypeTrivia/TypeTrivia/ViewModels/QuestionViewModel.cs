@@ -153,9 +153,39 @@ namespace TypeTrivia.ViewModels
                 }
             }
         }
+        private int _timeDisplay;
+        public int TimeDisplay
+        { 
+            get => _timeDisplay; 
+            set
+            {
+                if (_timeDisplay != value)
+                {
+                    _timeDisplay = value;
+                    OnPropertyChanged("TimeDisplay");
+                }
+            }
+        }
+        private const int StartingMaxTime = 30;
+        private int _maxTime;
+        public int MaxTime
+        {
+            get => _maxTime;
+            set
+            {
+                if (_maxTime != value)
+                {
+                    _maxTime = value;
+                    OnPropertyChanged("MaxTime");
+                }
+            }
+        }
+
         public QuestionViewModel()
         {
             // defaults
+            MaxTime = StartingMaxTime;
+            TimeDisplay = StartingMaxTime;
             NumCorrectAnswers = 0;
             GameRunning = true;
             GameOver = false;
@@ -177,6 +207,7 @@ namespace TypeTrivia.ViewModels
             {
                 ResetGame();
             });
+            CreateGameTimer();
         }
 
         public void CheckAnswer()
@@ -184,6 +215,13 @@ namespace TypeTrivia.ViewModels
             if(SelectedElement.ElementName == Answer)
             {
                 NumCorrectAnswers++;
+                // lower the timer
+                if(MaxTime > 3)
+                {
+                    MaxTime--;
+                }
+                // reset the display time
+                TimeDisplay = MaxTime;
                 // generate next question
                 GenerateNextQuestion();
             }
@@ -209,7 +247,7 @@ namespace TypeTrivia.ViewModels
             // show them the correct answer from the question they just got wrong
             foreach(ElementType element in PossibleAnswers)
             {
-                if(element.ElementName == SelectedElement.ElementName)
+                if(element.ElementName == SelectedElement?.ElementName)
                 {
                     Elements.Where(e => e.ElementName == element.ElementName).ToList().SingleOrDefault().ElementColor = Color.FromHex("#E61B23");
                 }
@@ -231,9 +269,6 @@ namespace TypeTrivia.ViewModels
             NumCorrectAnswers = 0;
             GameOver = false;
             GameRunning = true;
-            //OnPropertyChanged("NumCorrectAnswers");
-            //OnPropertyChanged("GameOver");
-            //OnPropertyChanged("GameRunning");
             ResetAnswersList();
             // re-create element list and connections from base to reset colors
             Elements.Clear();
@@ -241,6 +276,32 @@ namespace TypeTrivia.ViewModels
             CreateRelationLists();
             // create the first question
             GenerateNextQuestion();
+            // restart the timer
+            MaxTime = StartingMaxTime;
+            TimeDisplay = StartingMaxTime;
+            // start a timer for the page
+            CreateGameTimer();
+        }
+
+        public void CreateGameTimer()
+        {
+            // start a timer for the page
+            Device.StartTimer(TimeSpan.FromSeconds(1), () =>
+            {
+                // update the display timer every second
+                TimeDisplay--;
+                // if the display time every hits zero or drops below, end the game
+                if (TimeDisplay <= 0)
+                {
+                    EndGame();
+                    return false;
+                }
+                if (GameOver) // if a wrong answer was selected, stop the timer
+                {
+                    return false;
+                }
+                return true; // true to repeat the timer, false to stop
+            });
         }
 
         public void ResetAnswersList()

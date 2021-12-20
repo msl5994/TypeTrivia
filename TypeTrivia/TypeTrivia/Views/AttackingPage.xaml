@@ -11,10 +11,13 @@
         <ContentPage.Content>
         <StackLayout>
             <StackLayout x:Name="gameStack" Orientation="Vertical" Padding="30,24,30,24" Spacing="10">
-                <Label Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" HorizontalOptions="End"/>
-                <Label Text="{Binding QuestionPart1}" FontSize="Medium" HorizontalOptions="Center"/>
+                <Grid ColumnDefinitions="*,*,*" HorizontalOptions="FillAndExpand">
+                    <Label Grid.Column="1" Text="{Binding TimeDisplay}" HorizontalOptions="Center" TextColor="Black" FontSize="36"/>
+                    <Label Grid.Column="2" Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" HorizontalOptions="End" TextColor="Black"/>
+                </Grid>                
+                <Label Text="{Binding QuestionPart1}" FontSize="Medium" HorizontalOptions="Center" TextColor="Black"/>
                 <Label Text="{Binding QuestionElement.ElementName}" TextColor="White" BackgroundColor="{Binding QuestionElement.ElementColor}" FontSize="Medium" HorizontalOptions="Center" Padding="10,2,10,2"/>
-                <Label Text="{Binding QuestionPart2}" FontSize="Medium" HorizontalOptions="Center" HorizontalTextAlignment="Center"/>
+                <Label Text="{Binding QuestionPart2}" FontSize="Medium" HorizontalOptions="Center" HorizontalTextAlignment="Center" TextColor="Black"/>
                 <StackLayout x:Name="buttonStack" IsEnabled="{Binding GameRunning}">
                     <Button x:Name="normalButton" 
                     IsVisible="{Binding Elements[0].IsInQuestion}" 
@@ -161,10 +164,10 @@
                     Command="{Binding SelectAnswerCommand}"
                     CommandParameter="{x:Reference fairyButton}"/>
                 </StackLayout>
-                <StackLayout Orientation="Vertical" Spacing="2" IsVisible="{Binding GameOver}" HorizontalOptions="CenterAndExpand">                    
-                    <Label Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" FontSize="24" HorizontalOptions="Center"/>
-                    <Label Text="{Binding LongestStreak, StringFormat='Longest Streak: {0}'}" FontSize="24" HorizontalOptions="Center"/>
-                    <Button Text="Try Again?" Command="{Binding TryAgainCommand}"/>
+                <StackLayout Orientation="Vertical" Spacing="2" IsVisible="{Binding GameOver}" HorizontalOptions="CenterAndExpand">
+                    <Label Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" FontSize="24" HorizontalOptions="Center" TextColor="Black"/>
+                    <Label Text="{Binding LongestStreak, StringFormat='Longest Streak: {0}'}" FontSize="24" HorizontalOptions="Center" TextColor="Black"/>
+                    <Button Text="Try Again?" Command="{Binding TryAgainCommand}" TextColor="White" BackgroundColor="SlateGray"/>
                 </StackLayout>
             </StackLayout>
         </StackLayout>
