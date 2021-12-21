@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using TypeTrivia.Models;
 using TypeTrivia.Views;
 using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
@@ -17,10 +18,12 @@ namespace TypeTrivia.ViewModels
             AttackCommand = new AsyncCommand(async () =>
             {
                 await Shell.Current.GoToAsync($"{nameof(AttackingPage)}");
+                MessagingCenter.Send<MainPageViewModel, int>(this, "QuestionType", 0);
             });
             DefenseCommand = new AsyncCommand(async () =>
             {
                 await Shell.Current.GoToAsync($"{nameof(DefendingPage)}");
+                MessagingCenter.Send<MainPageViewModel, int>(this, "QuestionType", 1);
             });
         }
     }

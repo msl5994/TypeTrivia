@@ -7,12 +7,14 @@ using TypeTrivia.Models;
 using Xamarin.CommunityToolkit.ObjectModel;
 using Xamarin.Forms;
 using Xamarin.Essentials;
+using System.Threading;
 
 namespace TypeTrivia.ViewModels
 {
     public class QuestionViewModel : INotifyPropertyChanged
     {
-        // Custom Variables
+        #region properties
+        // Custom Matrix
         public float[,] TypeChartValues = new float[,]
         {
             { 1f, 1f, 1f, 1f, 1f, 0.5f, 1f, 0f, 0.5f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f, 1f}, // Normal
@@ -35,13 +37,17 @@ namespace TypeTrivia.ViewModels
             { 1f, 2f, 1f, 0.5f, 1f, 1f, 1f, 1f, 0.5f, 0.5f, 1f, 1f, 1f, 1f, 1f, 2f, 2f, 1f}, // Fairy
         };
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        protected virtual void OnPropertyChanged(string propertyName)
+        private Question _question;
+        public Question DisplayQuestion
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            get => _question;
+            set
+            {
+                _question = value;
+                OnPropertyChanged("DisplayQuestion");
+            }
         }
 
-        //public FormattedString Question { get; set; }
         private string _questionPart1;
         public String QuestionPart1
         {
@@ -61,13 +67,11 @@ namespace TypeTrivia.ViewModels
             get { return _questionPart2; }
             set
             {
-                if (_questionPart2 != value)
-                {
-                    _questionPart2 = value;
-                    OnPropertyChanged("QuestionPart2");
-                }
+                _questionPart2 = value;
+                OnPropertyChanged("QuestionPart2");
             }
         }
+
         private ElementType _questionElement;
         public ElementType QuestionElement 
         {
@@ -81,8 +85,6 @@ namespace TypeTrivia.ViewModels
                 }
             }
         }
-        public Command SelectAnswerCommand { get; }
-        public Command TryAgainCommand { get; }
         private List<ElementType> _elements;
         public List<ElementType> Elements
         {
@@ -118,13 +120,23 @@ namespace TypeTrivia.ViewModels
                 }
             }
         }
-        public int LongestStreak
+        public int LongestAttackStreak
         {
-            get => Preferences.Get(nameof(LongestStreak), 0);
+            get => Preferences.Get(nameof(LongestAttackStreak), 0);
             set
             {
-                Preferences.Set(nameof(LongestStreak), value);
-                OnPropertyChanged(nameof(LongestStreak));
+                Preferences.Set(nameof(LongestAttackStreak), value);
+                OnPropertyChanged(nameof(LongestAttackStreak));
+            }
+        }
+
+        public int LongestDefenseStreak
+        {
+            get => Preferences.Get(nameof(LongestDefenseStreak), 0);
+            set
+            {
+                Preferences.Set(nameof(LongestDefenseStreak), value);
+                OnPropertyChanged(nameof(LongestDefenseStreak));
             }
         }
         private bool _gameOver;
@@ -180,23 +192,39 @@ namespace TypeTrivia.ViewModels
                 }
             }
         }
+        #endregion
 
+        // Commands
+        public Command SelectAnswerCommand { get; }
+        public Command TryAgainCommand { get; }
+
+        // Constructor
         public QuestionViewModel()
         {
+            MessagingCenter.Subscribe<MainPageViewModel, int>(this, "QuestionType", (sender, arg) =>
+            {
+                Device.BeginInvokeOnMainThread(() => // might need this to set the type before generating the first question
+                {
+                    DisplayQuestion.Type = (Question.QuestionType)arg;
+                    // start with the first question after the type has been set
+                    GenerateNextQuestion();
+                });
+                MessagingCenter.Unsubscribe<MainPageViewModel, Question>(this, "QuestionType");
+            });
+
             // defaults
             MaxTime = StartingMaxTime;
             TimeDisplay = StartingMaxTime;
             NumCorrectAnswers = 0;
             GameRunning = true;
             GameOver = false;
+            DisplayQuestion = new Question();
 
             // create list of elements
             Elements = new List<ElementType>();
             PossibleAnswers = new List<ElementType>();
             CreateElements();
             CreateRelationLists();
-            // start with the first question
-            GenerateNextQuestion();
             SelectAnswerCommand = new Command((object sender) => 
             { 
                 Button button = (Button)sender;
@@ -210,10 +238,13 @@ namespace TypeTrivia.ViewModels
             CreateGameTimer();
         }
 
+        #region Gameplay Methods
         public void CheckAnswer()
         {
             if(SelectedElement.ElementName == Answer)
             {
+                // add some kind of fun visual feedback
+                //Thread.Sleep(1000);
                 NumCorrectAnswers++;
                 // lower the timer
                 if(MaxTime > 3)
@@ -235,13 +266,20 @@ namespace TypeTrivia.ViewModels
         {
             GameRunning = false;
             GameOver = true;
-            //OnPropertyChanged("GameOver");
-            //OnPropertyChanged("GameRunning");
-
             // update longest streak if neccessary
-            if (NumCorrectAnswers > LongestStreak)
+            if(DisplayQuestion.Type == Question.QuestionType.Attacking)
             {
-                LongestStreak = NumCorrectAnswers;
+                if (NumCorrectAnswers > LongestAttackStreak)
+                {
+                    LongestAttackStreak = NumCorrectAnswers;
+                }
+            }
+            else if(DisplayQuestion.Type == Question.QuestionType.Defending)
+            {
+                if (NumCorrectAnswers > LongestDefenseStreak)
+                {
+                    LongestDefenseStreak = NumCorrectAnswers;
+                }
             }
 
             // show them the correct answer from the question they just got wrong
@@ -328,40 +366,61 @@ namespace TypeTrivia.ViewModels
             Random rand = new Random();
             int ElementIndex = rand.Next(Elements.Count);
             QuestionElement = Elements[ElementIndex];
-            /*Question = new FormattedString 
-            {
-                Spans =
-                {
-                    new Span { Text = "When battling against ", TextColor = Color.Black},
-                    new Span { Text = QuestionElement.ElementName, TextColor = QuestionElement.ElementColor},
-                    new Span { Text = " types, which type of the ones below does the most effective damage?", TextColor = Color.Black},
-                }
-            };*/
             QuestionPart1 = "When battling against ";
-            QuestionPart2 = "Which type of the ones below does the most effective damage?";
-
-            // Select 4 possible answers, 1 of which must be correct
-            ElementIndex = rand.Next(QuestionElement.VulnerableTo.Count);
-            Answer = QuestionElement.VulnerableTo[ElementIndex];
-            ElementType AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
-            AnswerElement.IsInQuestion = true;
-            PossibleAnswers.Add(AnswerElement);
-            // loop to populate other answers
-            while(PossibleAnswers.Count < 4)
-            {
-                ElementIndex = rand.Next(Elements.Count);
-                // skip if already in the list of answers
-                if(PossibleAnswers.Contains(Elements[ElementIndex]) 
-                    || QuestionElement.VulnerableTo.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
+            // Select 4 possible answers, 1 of which must be correct based on the question type
+            if (DisplayQuestion.Type == Question.QuestionType.Attacking)
+            {                
+                QuestionPart2 = "Which type of the ones below does the most effective damage?";
+                // choose the answer from the vulnerable to element list
+                ElementIndex = rand.Next(QuestionElement.VulnerableTo.Count);
+                Answer = QuestionElement.VulnerableTo[ElementIndex];
+                ElementType AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
+                AnswerElement.IsInQuestion = true;
+                PossibleAnswers.Add(AnswerElement);
+                // loop to populate other answers
+                while (PossibleAnswers.Count < 4)
                 {
-                    continue;
-                }
-                else
-                {
-                    Elements[ElementIndex].IsInQuestion = true;
-                    PossibleAnswers.Add(Elements[ElementIndex]);
+                    ElementIndex = rand.Next(Elements.Count);
+                    // skip if already in the list of answers
+                    if (PossibleAnswers.Contains(Elements[ElementIndex])
+                        || QuestionElement.VulnerableTo.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        Elements[ElementIndex].IsInQuestion = true;
+                        PossibleAnswers.Add(Elements[ElementIndex]);
+                    }
                 }
             }
+            else if (DisplayQuestion.Type == Question.QuestionType.Defending)
+            {
+                QuestionPart2 = "Which type of the ones below resists the type of incoming damage?";                
+                // choose the answer from the resistant to element list
+                ElementIndex = rand.Next(QuestionElement.WeakAgainst.Count);
+                Answer = QuestionElement.WeakAgainst[ElementIndex];
+                ElementType AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
+                AnswerElement.IsInQuestion = true;
+                PossibleAnswers.Add(AnswerElement);
+                // loop to populate other answers
+                while (PossibleAnswers.Count < 4)
+                {
+                    ElementIndex = rand.Next(Elements.Count);
+                    // skip if already in the list of answers
+                    if (PossibleAnswers.Contains(Elements[ElementIndex])
+                        || QuestionElement.WeakAgainst.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        Elements[ElementIndex].IsInQuestion = true;
+                        PossibleAnswers.Add(Elements[ElementIndex]);
+                    }
+                }
+            }
+            OnPropertyChanged(nameof(QuestionPart2));
             OnPropertyChanged("PossibleAnswers");
             OnPropertyChanged("Elements");
         }
@@ -450,6 +509,14 @@ namespace TypeTrivia.ViewModels
                     }
                 }
             }
+        }
+        #endregion
+
+        // INotifyPropertyChanged Event Handler and Method
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected virtual void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
