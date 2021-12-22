@@ -192,6 +192,20 @@ namespace TypeTrivia.ViewModels
                 }
             }
         }
+
+        private bool _pauseTimer;
+        public bool PauseTimer
+        {
+            get => _pauseTimer;
+            set
+            {
+                if (_pauseTimer != value)
+                {
+                    _pauseTimer = value;
+                    OnPropertyChanged("PauseTimer");
+                }
+            }
+        }
         #endregion
 
         // Commands
@@ -218,6 +232,7 @@ namespace TypeTrivia.ViewModels
             NumCorrectAnswers = 0;
             GameRunning = true;
             GameOver = false;
+            PauseTimer = false;
             DisplayQuestion = new Question();
 
             // create list of elements
@@ -244,6 +259,23 @@ namespace TypeTrivia.ViewModels
             if(SelectedElement.ElementName == Answer)
             {
                 // add some kind of fun visual feedback
+                // store the original colors
+                List<Color>originalColors = new List<Color>();
+                foreach(ElementType elementType in PossibleAnswers)
+                {
+                    Color colorTemp = elementType.ElementColor;
+                    originalColors.Add(colorTemp);
+                    // set all colors in the answers list to white
+                    Elements.Where(e => e.ElementName == elementType.ElementName).FirstOrDefault().ElementColor = Color.LightGray;
+                }
+                ElementType tempAnswerElement = Elements.Where(e => e.ElementName == SelectedElement.ElementName).SingleOrDefault();
+                Color tempColor;
+                if(tempAnswerElement != null)
+                {
+                    tempColor = tempAnswerElement.ElementColor;
+                    tempAnswerElement.ElementColor = Color.Green;
+                }
+                OnPropertyChanged("Elements");
                 //Thread.Sleep(1000);
                 NumCorrectAnswers++;
                 // lower the timer
@@ -254,7 +286,8 @@ namespace TypeTrivia.ViewModels
                 // reset the display time
                 TimeDisplay = MaxTime;
                 // generate next question
-                GenerateNextQuestion();
+                CreateAnswerAnimationTimer(originalColors);
+                //GenerateNextQuestion();
             }
             else
             {
@@ -326,8 +359,11 @@ namespace TypeTrivia.ViewModels
             // start a timer for the page
             Device.StartTimer(TimeSpan.FromSeconds(1), () =>
             {
-                // update the display timer every second
-                TimeDisplay--;
+                if (!PauseTimer)
+                {
+                    // update the display timer every second
+                    TimeDisplay--;
+                }
                 // if the display time every hits zero or drops below, end the game
                 if (TimeDisplay <= 0)
                 {
@@ -340,6 +376,39 @@ namespace TypeTrivia.ViewModels
                 }
                 return true; // true to repeat the timer, false to stop
             });
+        }
+
+        public void CreateAnswerAnimationTimer(List<Color> colors)
+        {
+            PauseTimer = true;
+            int animationTime = 3;
+            Device.StartTimer(TimeSpan.FromSeconds(1), () => 
+            {
+                animationTime--;
+                if(animationTime <= 0)
+                {
+                    // give the animation a second to play before setting up the next question
+                    ReinstateOriginalColors(colors);
+                    return false;
+                }
+                return true;
+            });
+        }
+
+        public void ReinstateOriginalColors(List<Color> colors)
+        {
+            for(int x = 0; x < PossibleAnswers.Count; x++)
+            {
+                ElementType temp = Elements.Where(e => e.ElementName == PossibleAnswers[x].ElementName).FirstOrDefault();
+                if(temp != null)
+                {
+                    Elements.Where(e => e.ElementName == PossibleAnswers[x].ElementName).FirstOrDefault().ElementColor = colors[x];
+                }
+            }
+            OnPropertyChanged("Elements");
+            // after colors are restored generate the next question
+            GenerateNextQuestion();
+            PauseTimer = false;
         }
 
         public void ResetAnswersList()
@@ -366,10 +435,11 @@ namespace TypeTrivia.ViewModels
             Random rand = new Random();
             int ElementIndex = rand.Next(Elements.Count);
             QuestionElement = Elements[ElementIndex];
-            QuestionPart1 = "When battling against ";
+            //QuestionPart1 = "When battling against ";
             // Select 4 possible answers, 1 of which must be correct based on the question type
             if (DisplayQuestion.Type == Question.QuestionType.Attacking)
-            {                
+            {
+                QuestionPart1 = "When ATTACKING against ";
                 QuestionPart2 = "Which type of the ones below does the most effective damage?";
                 // choose the answer from the vulnerable to element list
                 ElementIndex = rand.Next(QuestionElement.VulnerableTo.Count);
@@ -396,6 +466,7 @@ namespace TypeTrivia.ViewModels
             }
             else if (DisplayQuestion.Type == Question.QuestionType.Defending)
             {
+                QuestionPart1 = "When DEFENDING against ";
                 QuestionPart2 = "Which type of the ones below resists the type of incoming damage?";                
                 // choose the answer from the resistant to element list
                 ElementIndex = rand.Next(QuestionElement.WeakAgainst.Count);
