@@ -7,7 +7,7 @@
     <ContentPage.BindingContext>
         <vm:MainPageViewModel/>
     </ContentPage.BindingContext>
-        <StackLayout>
+    <StackLayout>
         <!--<Frame BackgroundColor="#2196F3" Padding="10" CornerRadius="0">
             <Label Text="Welcome to Type Trivia" FontSize="Large" HorizontalOptions="Center" Margin="10" TextColor="White"/>
         </Frame>-->
@@ -21,6 +21,10 @@
                 <Button Margin="0,10,0,0" Text="Defending"
                         Command="{Binding DefenseCommand}"
                         BackgroundColor="CornflowerBlue"
+                        TextColor="White" />
+                <Button Margin="0,10,0,0" Text="Dual Type Attacking"
+                        Command="{Binding DualTypeAttackingCommand}"
+                        BackgroundColor="LightGreen"
                         TextColor="White" />
             </StackLayout>
         </ScrollView>

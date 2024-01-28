@@ -31,6 +31,10 @@ namespace TypeTrivia.Models
             ImmuneTo = new List<String>();
         }
 
+        public ElementType()
+        {
+        }
+
         /*
         public float[,] TypeChartValues = new float[,]
         {

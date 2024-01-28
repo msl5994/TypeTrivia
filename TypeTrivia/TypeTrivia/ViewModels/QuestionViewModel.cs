@@ -85,6 +85,21 @@ namespace TypeTrivia.ViewModels
                 }
             }
         }
+
+        private ElementType _questionElement2;
+        public ElementType QuestionElement2
+        {
+            get { return _questionElement2; }
+            set
+            {
+                if (_questionElement2 != value)
+                {
+                    _questionElement2 = value;
+                    OnPropertyChanged("QuestionElement2");
+                }
+            }
+        }
+
         private List<ElementType> _elements;
         public List<ElementType> Elements
         {
@@ -314,6 +329,13 @@ namespace TypeTrivia.ViewModels
                     LongestDefenseStreak = NumCorrectAnswers;
                 }
             }
+            else if (DisplayQuestion.Type == Question.QuestionType.DualType)
+            {
+                if (NumCorrectAnswers > LongestDefenseStreak)
+                {
+                    LongestDefenseStreak = NumCorrectAnswers;
+                }
+            }
 
             // show them the correct answer from the question they just got wrong
             foreach(ElementType element in PossibleAnswers)
@@ -435,61 +457,123 @@ namespace TypeTrivia.ViewModels
             Random rand = new Random();
             int ElementIndex = rand.Next(Elements.Count);
             QuestionElement = Elements[ElementIndex];
-            //QuestionPart1 = "When battling against ";
+            ElementType AnswerElement = new ElementType() { 
+                ElementName = ElementType.ElementID.Fire.ToString(), 
+                ElementIDnum = ElementType.ElementID.Fire, 
+                ElementColor = Color.Gray 
+            };
+
             // Select 4 possible answers, 1 of which must be correct based on the question type
-            if (DisplayQuestion.Type == Question.QuestionType.Attacking)
+            switch (DisplayQuestion.Type)
             {
-                QuestionPart1 = "When ATTACKING against ";
-                QuestionPart2 = "Which type of the ones below does the most effective damage?";
-                // choose the answer from the vulnerable to element list
-                ElementIndex = rand.Next(QuestionElement.VulnerableTo.Count);
-                Answer = QuestionElement.VulnerableTo[ElementIndex];
-                ElementType AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
-                AnswerElement.IsInQuestion = true;
-                PossibleAnswers.Add(AnswerElement);
-                // loop to populate other answers
-                while (PossibleAnswers.Count < 4)
-                {
-                    ElementIndex = rand.Next(Elements.Count);
-                    // skip if already in the list of answers
-                    if (PossibleAnswers.Contains(Elements[ElementIndex])
-                        || QuestionElement.VulnerableTo.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
+                case Question.QuestionType.Attacking:
+                    QuestionPart1 = "When ATTACKING against ";
+                    QuestionPart2 = "Which type of the ones below does the most effective damage?";
+                    // choose the answer from the vulnerable to element list
+                    ElementIndex = rand.Next(QuestionElement.VulnerableTo.Count);
+                    Answer = QuestionElement.VulnerableTo[ElementIndex];
+                    AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
+                    AnswerElement.IsInQuestion = true;
+                    PossibleAnswers.Add(AnswerElement);
+                    // loop to populate other answers
+                    while (PossibleAnswers.Count < 4)
                     {
-                        continue;
+                        ElementIndex = rand.Next(Elements.Count);
+                        // skip if already in the list of answers
+                        if (PossibleAnswers.Contains(Elements[ElementIndex])
+                            || QuestionElement.VulnerableTo.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            Elements[ElementIndex].IsInQuestion = true;
+                            PossibleAnswers.Add(Elements[ElementIndex]);
+                        }
                     }
-                    else
+                    break;
+                case Question.QuestionType.Defending:
+                    QuestionPart1 = "When DEFENDING against ";
+                    QuestionPart2 = "Which type of the ones below resists the type of incoming damage?";
+                    // choose the answer from the resistant to element list
+                    ElementIndex = rand.Next(QuestionElement.WeakAgainst.Count);
+                    Answer = QuestionElement.WeakAgainst[ElementIndex];
+                    AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
+                    AnswerElement.IsInQuestion = true;
+                    PossibleAnswers.Add(AnswerElement);
+                    // loop to populate other answers
+                    while (PossibleAnswers.Count < 4)
                     {
-                        Elements[ElementIndex].IsInQuestion = true;
-                        PossibleAnswers.Add(Elements[ElementIndex]);
+                        ElementIndex = rand.Next(Elements.Count);
+                        // skip if already in the list of answers
+                        if (PossibleAnswers.Contains(Elements[ElementIndex])
+                            || QuestionElement.WeakAgainst.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            Elements[ElementIndex].IsInQuestion = true;
+                            PossibleAnswers.Add(Elements[ElementIndex]);
+                        }
                     }
-                }
-            }
-            else if (DisplayQuestion.Type == Question.QuestionType.Defending)
-            {
-                QuestionPart1 = "When DEFENDING against ";
-                QuestionPart2 = "Which type of the ones below resists the type of incoming damage?";                
-                // choose the answer from the resistant to element list
-                ElementIndex = rand.Next(QuestionElement.WeakAgainst.Count);
-                Answer = QuestionElement.WeakAgainst[ElementIndex];
-                ElementType AnswerElement = Elements.Where(e => e.ElementName == Answer).SingleOrDefault();
-                AnswerElement.IsInQuestion = true;
-                PossibleAnswers.Add(AnswerElement);
-                // loop to populate other answers
-                while (PossibleAnswers.Count < 4)
-                {
-                    ElementIndex = rand.Next(Elements.Count);
-                    // skip if already in the list of answers
-                    if (PossibleAnswers.Contains(Elements[ElementIndex])
-                        || QuestionElement.WeakAgainst.Contains(Elements[ElementIndex].ElementName)) // or if the element is another possible correct answer
+                    break;
+                case Question.QuestionType.DualType:
+                    QuestionPart1 = "When ATTACKING against ";
+                    QuestionPart2 = "Which type of the ones below does the most effective damage?";
+                    // choose the answer from the vulnerable to element list
+                    //ElementIndex = rand.Next(QuestionElement.VulnerableTo.Count);
+                    int Element2Index = ElementIndex;
+                    while(ElementIndex == Element2Index)
                     {
-                        continue;
+                        Element2Index = rand.Next(Elements.Count);
                     }
-                    else
+                    QuestionElement2 = Elements[Element2Index];
+                    //Element2Index = rand.Next(QuestionElement2.VulnerableTo.Count);                    
+                    // precalc
+                    float highestResult = 0.0f;
+                    int highestResultIndex = -1;
+                    // loop through element options
+                    for(int i = 0; i < Elements.Count -1; i++)
                     {
-                        Elements[ElementIndex].IsInQuestion = true;
-                        PossibleAnswers.Add(Elements[ElementIndex]);
+                        float val1 = TypeChartValues[i, ElementIndex];
+                        float val2 = TypeChartValues[i, Element2Index];
+                        float result = val1 * val2;
+                        if(result > highestResult)
+                        {
+                            highestResult = result;
+                            highestResultIndex = i;
+                        }
                     }
-                }
+                    AnswerElement = Elements[highestResultIndex];
+                    AnswerElement.IsInQuestion = true;
+                    Answer = AnswerElement.ElementName;
+                    PossibleAnswers.Add(AnswerElement);
+                    // loop to populate other answers
+                    while (PossibleAnswers.Count < 4)
+                    {
+                        int PossibleElementIndex = rand.Next(Elements.Count);
+                        // check for duplicate correct answers via values
+                        float val1 = TypeChartValues[PossibleElementIndex, ElementIndex];
+                        float val2 = TypeChartValues[PossibleElementIndex, Element2Index];
+                        float result = val1 * val2;
+                        // skip if already in the list of answers
+                        if (PossibleAnswers.Contains(Elements[PossibleElementIndex]))
+                        {
+                            continue;
+                        }
+                        // skip if better answer than previous or tied with it
+                        else if (result >= highestResult)
+                        {
+                            continue;
+                        }
+                        else
+                        {
+                            Elements[PossibleElementIndex].IsInQuestion = true;
+                            PossibleAnswers.Add(Elements[PossibleElementIndex]);
+                        }
+                    }
+                    break;
             }
             OnPropertyChanged(nameof(QuestionPart2));
             OnPropertyChanged("PossibleAnswers");

@@ -24,6 +24,7 @@ namespace TypeTrivia
         {
             Routing.RegisterRoute(nameof(AttackingPage), typeof(AttackingPage));
             Routing.RegisterRoute(nameof(DefendingPage), typeof(DefendingPage));
+            Routing.RegisterRoute(nameof(DualTypeAttackingPage), typeof(DualTypeAttackingPage));
         }
     }
 }
