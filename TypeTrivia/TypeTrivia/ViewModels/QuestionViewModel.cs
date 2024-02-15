@@ -154,6 +154,16 @@ namespace TypeTrivia.ViewModels
                 OnPropertyChanged(nameof(LongestDefenseStreak));
             }
         }
+
+        public int LongestDualTypeStreak
+        {
+            get => Preferences.Get(nameof(LongestDualTypeStreak), 0);
+            set
+            {
+                Preferences.Set(nameof(LongestDualTypeStreak), value);
+                OnPropertyChanged(nameof(LongestDualTypeStreak));
+            }
+        }
         private bool _gameOver;
         public bool GameOver
         {
@@ -331,9 +341,9 @@ namespace TypeTrivia.ViewModels
             }
             else if (DisplayQuestion.Type == Question.QuestionType.DualType)
             {
-                if (NumCorrectAnswers > LongestDefenseStreak)
+                if (NumCorrectAnswers > LongestDualTypeStreak)
                 {
-                    LongestDefenseStreak = NumCorrectAnswers;
+                    LongestDualTypeStreak = NumCorrectAnswers;
                 }
             }
 

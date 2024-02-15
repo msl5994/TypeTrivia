@@ -166,7 +166,7 @@
                 </StackLayout>
                 <StackLayout Orientation="Vertical" Spacing="2" IsVisible="{Binding GameOver}" HorizontalOptions="CenterAndExpand">
                     <Label Text="{Binding NumCorrectAnswers, StringFormat='Streak: {0}'}" FontSize="24" HorizontalOptions="Center" TextColor="Black"/>
-                    <Label Text="{Binding LongestAttackStreak, StringFormat='Longest Streak: {0}'}" FontSize="24" HorizontalOptions="Center" TextColor="Black"/>
+                    <Label Text="{Binding LongestDualTypeStreak, StringFormat='Longest Streak: {0}'}" FontSize="24" HorizontalOptions="Center" TextColor="Black"/>
                     <Button Text="Try Again?" Command="{Binding TryAgainCommand}" TextColor="White" BackgroundColor="SlateGray"/>
                 </StackLayout>
             </StackLayout>
